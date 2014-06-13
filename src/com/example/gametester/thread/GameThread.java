@@ -1,15 +1,22 @@
 package com.example.gametester.thread;
 
+import android.graphics.Canvas;
 import android.util.Log;
+import android.view.SurfaceHolder;
 
 import com.example.gametester.MainActivity;
+import com.example.gametester.views.GameSurface;
 
 public class GameThread extends Thread {
+	private static final String TAG = "GameThread";
+	
 	private int framerate = 0;
 	private long lastTime = 0;
 	private volatile boolean mRunFlag = false;
 	
 	private MainActivity mActivity;
+	private GameSurface mSurface;
+	private SurfaceHolder mSurfaceHolder;
 	
 	public GameThread() {
 		
@@ -31,23 +38,35 @@ public class GameThread extends Thread {
 		lastTime = System.nanoTime();
 		
 		while(this.mRunFlag) {
+			
 			//game loop
 			long time = System.nanoTime();
 			long elapsed = time - lastTime;
 			int rate = 0;
-			Log.d("TAG", "elapsed " + elapsed);
 			if(elapsed != 0) {
 				rate = (int)(1e9 / elapsed);
 			}
-			lastTime = time;
+			this.lastTime = time;
 			this.mActivity.setFrameRate(rate);
 			this.mActivity.updateDisplay();
 			
+			Canvas c = mSurfaceHolder.lockCanvas();
+			synchronized(mSurfaceHolder) {
+				mSurface.draw(c);
+			}
+			if(c != null) {
+				mSurfaceHolder.unlockCanvasAndPost(c);
+			}
 			//state
-			
 			
 			//input
 			
+//			updateState();
+//		    updateInput();
+//		    updateAI();
+//		    updatePhysics();
+//		    updateAnimations();
+//		    updateSound();
 			
 			
 		}
@@ -56,6 +75,11 @@ public class GameThread extends Thread {
 	
 	public void setActivity(MainActivity activity) {
 		this.mActivity = activity;
+	}
+	
+	public void setSurfaceView(GameSurface surface) {
+		mSurface = surface;
+		mSurfaceHolder = mSurface.getHolder();
 	}
 	
 	public void closeThread() {

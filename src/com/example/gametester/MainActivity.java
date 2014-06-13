@@ -1,6 +1,7 @@
 package com.example.gametester;
 
 import com.example.gametester.thread.GameThread;
+import com.example.gametester.views.GameSurface;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ public class MainActivity extends Activity {
 	private Object mThreadLock = new Object();
 	
 	private TextView mFrameDisplay;
+	private GameSurface mSurface;
 	
 	private GameThread mGameLoop;
 	
@@ -29,20 +31,17 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         
         mFrameDisplay = (TextView)findViewById(R.id.debug_frame_display);
-        View kill = findViewById(R.id.kill);
-        kill.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mGameLoop.closeThread();
-			}
-		});
+        
+        mSurface = (GameSurface)findViewById(R.id.game_surface);
         
         mGameLoop = new GameThread(this);
+        mGameLoop.setSurfaceView(mSurface);
         mGameLoop.start();
     }
     
     @Override
     protected void onDestroy() {
+    	super.onDestroy();
     	mGameLoop.closeThread();
     }
     
@@ -56,13 +55,7 @@ public class MainActivity extends Activity {
     		Runnable ui = new Runnable() {
     			@Override
     			public void run() {
-    				if(DEBUG) {
-    					mFrameDisplay.setText(String.valueOf(mCurrentFrameRate));
-    				}
-
-    				synchronized (mThreadLock) {
-    					mThreadLock.notify();
-    				}
+    				doUpdateDisplay();
     			}
     		};
     		runOnUiThread(ui);
@@ -73,6 +66,16 @@ public class MainActivity extends Activity {
     			Log.e(TAG, "InterruptedException", e);
     		}
     	}
+    }
+    
+    private void doUpdateDisplay() {
+    	if(DEBUG) {
+			mFrameDisplay.setText(String.valueOf(mCurrentFrameRate));
+		}
+
+		synchronized (mThreadLock) {
+			mThreadLock.notify();
+		}
     }
 
 }
