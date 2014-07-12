@@ -1,16 +1,15 @@
 package com.example.gametester.thread;
 
 import android.graphics.Canvas;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.example.gametester.MainActivity;
 import com.example.gametester.views.GameSurface;
 
 public class GameThread extends Thread {
+	@SuppressWarnings("unused")
 	private static final String TAG = "GameThread";
 	
-	private int framerate = 0;
 	private long lastTime = 0;
 	private volatile boolean mRunFlag = false;
 	
@@ -38,7 +37,6 @@ public class GameThread extends Thread {
 		lastTime = System.nanoTime();
 		
 		while(this.mRunFlag) {
-			
 			//game loop
 			long time = System.nanoTime();
 			long elapsed = time - lastTime;
